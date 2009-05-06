@@ -1,0 +1,104 @@
+README for AMD's Linux fglrx drivers, as packaged by rpmfusion.org.
+
+
+1. After Installation
+-----------------------------
+
+The easiest way to start using the fglrx drivers after installation is to
+restart your system.
+
+The hard way depends on your hardware and your configuration:
+
+Check if you have loaded the module "radeon". If not simply log out of your
+X session to restart X -- the catalyst driver should now be loaded if there is
+a proper kernel-module installed. You can also run:
+    /etc/init.d/catalyst status
+to see if you need a reboot. If you read:
+    Initscript is running.
+    Driver is enabled.
+You don't need a reboot. If you have loaded the radeon driver log out of
+your X session, log in again, issue the command:
+    /sbin/rmmod radeon
+and end your X session once again.
+
+To check that hardware acceleration is working, issue the following command
+in a terminal:
+    glxinfo | grep "OpenGL vendor"
+That should print out
+    OpenGL vendor string: ATI Technologies Inc.
+
+Also, the command
+    glxinfo | grep direct
+should print out
+    direct rendering: Yes
+If it does, you're all set.
+
+
+2. Basic Configuration
+-----------------------------
+
+The installation scripts perform the basic configuration for you.
+When (if) you uninstall the drivers, the configuration is reset to
+use the X.org/XFree86 radeon driver again. If you want to temporarily disable
+the fglrx drivers without uninstalling, you can issue the following
+two commands as root (remember su -):
+    catalyst-config-display disable
+Note: DRI will be disabled in this case when the fglrx kernel-module was
+loaded. It will be enabled again on the next system restart.
+To re-enable the fglrx drivers without a reboot, run:
+    catalyst-config-display enable
+
+
+
+3. Additional configuration
+----------------------------------
+
+For configuration options (TwinView, TV-out etc) see
+/usr/share/doc/fglrx-*/index.html
+
+
+4. Kernel Module
+-----------------------------
+
+The fglrx kernel module is required for DRI. For Fedora kernels you will find
+RPMs with the name:
+    kmod-catalyst-$(uname -r)-(ati-version)-fc(releasever).(arch).rpm
+    (e.g. kmod-catalyst-2.6.27.19-170.2.35.fc10.x86_64-9.4-1.fc10.x86_64)
+at rpmfusion.org. If you use another kernel, grab the proper SRPM:
+    (e.g catalyst-kmod-9.4.fc10.src.rpm)
+from rpmfusion.org and rebuild the kernel module with the following command:
+    rpmbuild --rebuild /path/to/catalyst-srpm.src.rpm
+
+
+5. Release-specific notes
+-----------------------------
+
+Recent releases (Catalyst 8.12+) are incompatible with the plymouth boot
+system implemented in Fedora 10, as the 'radeon' and 'drm' kernel modules are
+loaded from the kernel ramdisk image (initrd) before fglrx can be. Because of
+this, these modules have been blacklisted. The open-source radeon driver as well
+as the plymouth graphical boot system will not function while the this driver is
+installed. If you would like to use them, please uninstall this driver first.
+
+The initrd image for the current kernel will need to be regenerated* before 3D
+rendering will function correctly. To do this, execute these commands as root:
+    mv /boot/initrd-`uname -r`.img /boot/initrd-`uname -r`.img.rfbak
+    mkinitrd -f --allow-missing /boot/initrd-`uname -r`.img `uname -r`
+
+A final reboot will be required before things function as expected. To restore
+plymouth functionality and use the open source drivers, first uninstall the
+xorg-x11-drv-catalyst package from your system and then run:
+    mv /boot/initrd-`uname -r`.img.rfbak /boot/initrd-`uname -r`.img
+
+Once again, a reboot will be required before the open source drivers being
+working properly.
+
+
+* Please note that in some cases, the initrd image may need to be regenerated
+twice (once for getting fglrx to load, the other for putting the udev config
+file into the initrd image). If your machine still does not have working DRI
+or 3D rendering after regenerating the image once and rebooting, regenerate
+the image again:
+    mkinitrd -f --allow-missing /boot/initrd-`uname -r`.img `uname -r`
+
+Reboot and DRI should be enabled correctly now.
