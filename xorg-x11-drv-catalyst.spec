@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         9.4
-Release:         4%{?dist}
+Version:         9.5
+Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-4-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-5-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -122,8 +122,10 @@ cp -r fglrx/common/* fglrx/x740_64a/* fglrx/arch/x86_64/* fglrxpkg/
 find fglrxpkg/usr/share/doc/fglrx -type f -exec chmod 0644 {} \;
 install -pm 0644 %{SOURCE1} ./README.Fedora
 
-%build
 
+
+%build
+#Nothing to build
 
 %install
 rm -rf $RPM_BUILD_ROOT ./__doc
@@ -179,6 +181,9 @@ do
   then
     install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/%{_mandir}/${file##./usr/share/man/}
   elif [[ ! "/${file##./usr/share/ati/amdcccle}" = "/${file}" ]]
+  then
+    install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/${file}
+  elif [[ ! "/${file##./usr/share/doc/amdcccle}" = "/${file}" ]]
   then
     install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/${file}
   else
@@ -262,6 +267,7 @@ fi ||:
 %files
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/share/doc/fglrx/* README.Fedora
+%doc %{_docdir}/amdcccle/ccc_copyrights.txt
 %dir %{_sysconfdir}/ati/
 %{_sysconfdir}/ati/atiogl.xml
 %{_sysconfdir}/ati/logo.xbm.example
@@ -305,6 +311,9 @@ fi ||:
 %{_includedir}/fglrx/X11/extensions/*.h
 
 %changelog
+* Thu May 21 2009 kwizart < kwizart at gmail.com > - 9.5-1
+- Update to 9.5 (internal version 8.612)
+
 * Sun May 3 2009 Stewart Adam <s.adam at diffingo.com> - 9.4-4
 - Make the ExclusiveArch dynamic
 - Fix requirement on libs subpackage
