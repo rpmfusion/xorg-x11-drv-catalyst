@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         9.4
-Release:         4%{?dist}
+Version:         9.8
+Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-4-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-8-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -181,6 +181,9 @@ do
   elif [[ ! "/${file##./usr/share/ati/amdcccle}" = "/${file}" ]]
   then
     install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/${file}
+  elif [[ ! "/${file##./usr/share/doc/amdcccle}" = "/${file}" ]]
+  then
+    install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/${file}
   else
     echo ${file} found -- don\'t know how to handle
     exit 1
@@ -263,6 +266,7 @@ fi ||:
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/share/doc/fglrx/* README.Fedora
 %dir %{_sysconfdir}/ati/
+%doc %{_docdir}/amdcccle/ccc_copyrights.txt
 %{_sysconfdir}/ati/atiogl.xml
 %{_sysconfdir}/ati/logo.xbm.example
 %{_sysconfdir}/ati/logo_mask.xbm.example
@@ -301,10 +305,15 @@ fi ||:
 %doc fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
 %{atilibdir}/*.a
 %{_libdir}/xorg/modules/*.a
-%{_includedir}/fglrx/GL/
-%{_includedir}/fglrx/X11/extensions/*.h
+%{_includedir}/fglrx/
 
 %changelog
+* Mon Aug 17 2009 Stewart Adam <s.adam at diffingo.com> - 9.8-1
+- Update to Catalyst 9.8 (internal version 8.64.3)
+
+* Mon Aug 17 2009 Jonathan Dieter <jdieter@lesbg.com> - 9.7-1
+- Update to 9.7 (internal version 8.632)
+
 * Sun May 3 2009 Stewart Adam <s.adam at diffingo.com> - 9.4-4
 - Make the ExclusiveArch dynamic
 - Fix requirement on libs subpackage
