@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         9.5
+Version:         9.8
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-5-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-8-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -307,10 +307,12 @@ fi ||:
 %doc fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
 %{atilibdir}/*.a
 %{_libdir}/xorg/modules/*.a
-%{_includedir}/fglrx/GL/
-%{_includedir}/fglrx/X11/extensions/*.h
+%{_includedir}/fglrx/
 
 %changelog
+* Mon Aug 17 2009 Stewart Adam <s.adam at diffingo.com> - 9.8-1
+- Update to Catalyst 9.8 (internal version 8.64.3)
+
 * Thu May 21 2009 kwizart < kwizart at gmail.com > - 9.5-1
 - Update to 9.5 (internal version 8.612)
 
