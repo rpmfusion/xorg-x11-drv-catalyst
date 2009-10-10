@@ -8,7 +8,7 @@
 
 Name:            xorg-x11-drv-catalyst
 Version:         9.9
-Release:         1%{?dist}
+Release:         2%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -25,6 +25,12 @@ Source9:         catalyst-a-lid-aticonfig
 Source10:        catalyst.sh
 Source11:        catalyst.csh
 Source13:        blacklist-radeon.conf
+# So we don't mess with mesa provides.
+Source91:        filter-requires.sh
+Source92:        filter-provides.sh
+%define          _use_internal_dependency_generator 0
+%define          __find_requires %{SOURCE91}
+%define          __find_provides %{SOURCE92}
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -308,6 +314,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Sat Oct 10 2009 kwizart < kwizart at gmail.com > - 9.9-2
+- Avoid Requires/Provides of the libGL.so.1 . rfbz#859
+
 * Fri Sep 11 2009 Stewart Adam <s.adam at diffingo.com> - 9.9-1
 - Update to Catalyst 9.9 (internal version 8.65.4)
 
