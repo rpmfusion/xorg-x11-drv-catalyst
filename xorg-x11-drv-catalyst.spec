@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         9.9
+Version:         9.10
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-9-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-10-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -24,7 +24,6 @@ Source8:         catalyst-a-ac-aticonfig
 Source9:         catalyst-a-lid-aticonfig
 Source10:        catalyst.sh
 Source11:        catalyst.csh
-Source13:        blacklist-radeon.conf
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -233,10 +232,6 @@ find $RPM_BUILD_ROOT -type f -name '*.a' -exec chmod 0644 '{}' \;
 chmod 644 $RPM_BUILD_ROOT/%{_sysconfdir}/ati/*.xbm.example
 chmod 755 $RPM_BUILD_ROOT/%{_sysconfdir}/ati/*.sh
 
-# blacklist to prevent radeon autoloading
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/modprobe.d
-install -pm 0644 %{SOURCE13} $RPM_BUILD_ROOT%{_sysconfdir}/modprobe.d/blacklist-radeon.conf
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -280,7 +275,6 @@ fi ||:
 %config %{_sysconfdir}/acpi/actions/ati-powermode.sh
 %config(noreplace) %{_sysconfdir}/acpi/events/*aticonfig.conf
 %config(noreplace) %{_sysconfdir}/profile.d/catalyst.*
-%config(noreplace) %{_sysconfdir}/modprobe.d/blacklist-radeon.conf
 %{_initrddir}/*
 %{_sbindir}/*
 %{_bindir}/*
@@ -310,6 +304,11 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Sat Oct 24 2009 Stewart Adam <s.adam at diffingo.com> - 9.10-1
+- Update to Catalyst 9.10 (internal version 8.66.1)
+- Remove radeon blacklists and update README: fglrx module is now compatible
+  with radeon
+
 * Fri Sep 11 2009 Stewart Adam <s.adam at diffingo.com> - 9.9-1
 - Update to Catalyst 9.9 (internal version 8.65.4)
 
