@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         9.10
+Version:         9.12
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-10-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-12-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -41,6 +41,8 @@ ExclusiveArch: i386 x86_64
 
 Requires:        catalyst-kmod >= %{version}
 
+# It seems rpaths were introduced into the amdcccle/amdnotifyui binary in 9.12
+BuildRequires:   chrpath
 # Needed in all nvidia or fglrx driver packages
 BuildRequires:   desktop-file-utils
 Requires:        livna-config-display >= 0.0.23
@@ -134,7 +136,7 @@ install -pm 0644 %{SOURCE1} ./README.Fedora
 rm -rf $RPM_BUILD_ROOT ./__doc
 
 set +x
-for file in $(cd fglrxpkg &> /dev/null; find . -type f | grep -v -e 'amdcccle.kdelnk$' -e 'amdcccle.desktop$' -e 'lib/modules/fglrx$' -e 'fireglcontrolpanel$' -e '/usr/share/doc/fglrx/' -e 'fglrx_panel_sources.tgz$' -e 'amdcccle.*.desktop$' -e 'amdcccle.*.kdelnk' -e 'fglrx_sample_source.tgz$' -e '^./lib/modules/fglrx' -e '/usr/share/icons/ccc_')
+for file in $(cd fglrxpkg &> /dev/null; find . -type f | grep -v -e 'amdcccle.kdelnk$' -e 'amdcccle.desktop$' -e 'lib/modules/fglrx$' -e 'fireglcontrolpanel$' -e '/usr/share/doc/fglrx/' -e 'fglrx_panel_sources.tgz$' -e 'amdcccle.*.desktop$' -e 'amdcccle.*.kdelnk' -e 'fglrx_sample_source.tgz$' -e '^./lib/modules/fglrx' -e '/usr/share/icons/ccc_' -e '^./usr/share/ati/lib')
 do
   if [[ ! "/${file##}" = "/${file}" ]]
   then
@@ -211,7 +213,6 @@ ln -s libfglrx_tvout.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_tvout.so.1
 install -D -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.sh
 install -D -p -m 0644 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.csh
 
-install -D -p -m 0644 fglrxpkg/usr/share/icons/ccc_small.xpm $RPM_BUILD_ROOT/%{_datadir}/icons/ccc_small.xpm
 install -D -p -m 0644 fglrxpkg/usr/share/icons/ccc_large.xpm $RPM_BUILD_ROOT/%{_datadir}/icons/ccc_large.xpm
 install -D -p -m 0755 %{SOURCE3} $RPM_BUILD_ROOT%{_sbindir}/%(basename %{SOURCE3})
 install -D -p -m 0755 %{SOURCE4} $RPM_BUILD_ROOT%{_initrddir}/catalyst
@@ -235,6 +236,10 @@ chmod 644 fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
 find $RPM_BUILD_ROOT -type f -name '*.a' -exec chmod 0644 '{}' \;
 chmod 644 $RPM_BUILD_ROOT/%{_sysconfdir}/ati/*.xbm.example
 chmod 755 $RPM_BUILD_ROOT/%{_sysconfdir}/ati/*.sh
+
+# Remove rpaths (see comment on chrpath BR above)
+chrpath --delete $RPM_BUILD_ROOT%{_bindir}/amdcccle
+chrpath --delete $RPM_BUILD_ROOT%{_sbindir}/amdnotifyui
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -308,6 +313,10 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Mon Dec 28 2009 Stewart Adam <s.adam at diffingo.com> - 9.12-1
+- Update to Catalyst 9.12 (internal version 8.68.1)
+- Remove rpaths from binaries
+
 * Sat Oct 24 2009 Stewart Adam <s.adam at diffingo.com> - 9.10-1
 - Update to Catalyst 9.10 (internal version 8.66.1)
 - Remove radeon blacklists and update README: fglrx module is now compatible
