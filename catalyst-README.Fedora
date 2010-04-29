@@ -73,6 +73,6 @@ from rpmfusion.org and rebuild the kernel module with the following command:
 5. Release-specific notes
 -----------------------------
 
-9.10 is the first release since 8.12 to be compatible with the open-source
-Radeon Xorg driver. The initrd image regeneration workaround is no longer
-required after installing this driver release.
+As of Catalyst version 9.10, the fglrx kernel module is no longer incompatible
+with the open-source Radeon Xorg driver. The initrd image regeneration
+workaround is therefore no longer required.
