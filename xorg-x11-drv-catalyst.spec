@@ -8,7 +8,7 @@
 
 Name:            xorg-x11-drv-catalyst
 Version:         10.4
-Release:         1%{?dist}
+Release:         2%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -33,7 +33,9 @@ Source92:        filter-provides.sh
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-%if 0%{?fedora} >= 11
+%if 0%{?fedora} > 11 || 0%{?rhel} > 5
+ExclusiveArch: i686 x86_64
+%else 0%{?fedora} == 11
 ExclusiveArch: i586 x86_64
 %else
 ExclusiveArch: i386 x86_64
@@ -312,6 +314,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Tue May 4 2010 Stewart Adam <s.adam at diffingo.com> - 10.4-2
+- Fix ExclusiveArch on F12 (use i686 instead of i586)
+
 * Sat May 1 2010 Stewart Adam <s.adam at diffingo.com> - 10.4-1
 - Update to Catalyst 10.4 (internal version 8.72.3)
 
