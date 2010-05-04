@@ -73,32 +73,10 @@ from rpmfusion.org and rebuild the kernel module with the following command:
 5. Release-specific notes
 -----------------------------
 
-Recent releases (Catalyst 8.12+) are incompatible with the plymouth boot
-system implemented in Fedora 10, as the 'radeon' and 'drm' kernel modules are
-loaded from the kernel ramdisk image (initrd) before fglrx can be. Because of
-this, these modules have been blacklisted. The open-source radeon driver as well
-as the plymouth graphical boot system will not function while the this driver is
-installed. If you would like to use them, please uninstall this driver first.
-
-The initrd image for the current kernel will need to be regenerated* before 3D
-rendering will function correctly. To do this, execute these commands as root:
-    mv /boot/initrd-`uname -r`.img /boot/initrd-`uname -r`.img.rfbak
-    mkinitrd -f --allow-missing /boot/initrd-`uname -r`.img `uname -r`
-
-A final reboot will be required before things function as expected. To restore
-plymouth functionality and use the open source drivers, first uninstall the
-xorg-x11-drv-catalyst package from your system and then run:
-    mv /boot/initrd-`uname -r`.img.rfbak /boot/initrd-`uname -r`.img
-
-Once again, a reboot will be required before the open source drivers being
-working properly.
-
-
-* Please note that in some cases, the initrd image may need to be regenerated
-twice (once for getting fglrx to load, the other for putting the udev config
-file into the initrd image). If your machine still does not have working DRI
-or 3D rendering after regenerating the image once and rebooting, regenerate
-the image again:
-    mkinitrd -f --allow-missing /boot/initrd-`uname -r`.img `uname -r`
-
-Reboot and DRI should be enabled correctly now.
+As of Catalyst version 9.10, the fglrx kernel module is no longer incompatible
+with the open-source Radeon Xorg driver. The initrd image regeneration
+workaround is therefore no longer required. However, during testing some
+systems failed to poweroff properly if kernel modesetting (KMS) was enabled. If
+you are affected by this problem, you can disable modesetting by executing the
+following command as root:
+    grubby --update-kernel=/boot/vmlinuz-`uname -r` --args=nomodeset
