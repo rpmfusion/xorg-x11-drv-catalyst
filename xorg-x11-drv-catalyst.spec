@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.4
-Release:         2%{?dist}
+Version:         10.5
+Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-4-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-5-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -48,6 +48,12 @@ BuildRequires:   chrpath
 # Needed in all nvidia or fglrx driver packages
 BuildRequires:   desktop-file-utils
 Requires:        livna-config-display >= 0.0.23
+%if 0%{?fedora} > 10 || 0%{?rhel} > 5
+Requires:        %{name}-libs%{_isa} = %{version}-%{release}
+%else
+Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
+%endif
+
 Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
 Requires(post):  livna-config-display
 Requires(preun): livna-config-display
@@ -78,7 +84,7 @@ Conflicts:       ATI-fglrx-IA32-libs
 This package provides the most recent proprietary AMD display driver which
 allows for hardware accelerated rendering with ATI Mobility, FireGL and
 Desktop GPUs. Some of the Desktop and Mobility GPUs supported are the
-Radeon HD 2000 series to the Radeon HD 4800 series.
+Radeon HD 2xxx series to the Radeon HD 5xxx series.
 
 For the full product support list, please consult the release notes
 for release %{version}.
@@ -208,8 +214,8 @@ find $RPM_BUILD_ROOT/%{atilibdir} -type f -name "*.a" -exec chmod 0644 '{}' \;
 ln -s libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/libGL.so.1
 ln -s libfglrx_gamma.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_gamma.so.1
 ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_dm.so.1
-ln -s libfglrx_pp.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_pp.so.1
-ln -s libfglrx_tvout.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_tvout.so.1
+ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libAMDXvBA.so.1
+ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libXvBAW.so.1
 
 # profile.d files
 install -D -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.sh
@@ -314,6 +320,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Thu May 27 2010 Stewart Adam <s.adam at diffingo.com> - 10.5-1
+- Update to Catalyst 10.5 (internal version 8.73.2)
+
 * Tue May 4 2010 Stewart Adam <s.adam at diffingo.com> - 10.4-2
 - Fix ExclusiveArch on F12 (use i686 instead of i586)
 
