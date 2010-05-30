@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.4
+Version:         10.5
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-4-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-5-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -33,7 +33,9 @@ Source92:        filter-provides.sh
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-%if 0%{?fedora} >= 11
+%if 0%{?fedora} > 11 || 0%{?rhel} > 5
+ExclusiveArch: i686 x86_64
+%else 0%{?fedora} == 11
 ExclusiveArch: i586 x86_64
 %else
 ExclusiveArch: i386 x86_64
@@ -46,6 +48,12 @@ BuildRequires:   chrpath
 # Needed in all nvidia or fglrx driver packages
 BuildRequires:   desktop-file-utils
 Requires:        livna-config-display >= 0.0.23
+%if 0%{?fedora} > 10 || 0%{?rhel} > 5
+Requires:        %{name}-libs%{_isa} = %{version}-%{release}
+%else
+Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
+%endif
+
 Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
 Requires(post):  livna-config-display
 Requires(preun): livna-config-display
@@ -76,7 +84,7 @@ Conflicts:       ATI-fglrx-IA32-libs
 This package provides the most recent proprietary AMD display driver which
 allows for hardware accelerated rendering with ATI Mobility, FireGL and
 Desktop GPUs. Some of the Desktop and Mobility GPUs supported are the
-Radeon HD 2000 series to the Radeon HD 4800 series.
+Radeon HD 2xxx series to the Radeon HD 5xxx series.
 
 For the full product support list, please consult the release notes
 for release %{version}.
@@ -313,6 +321,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Thu May 27 2010 Stewart Adam <s.adam at diffingo.com> - 10.5-1
+- Update to Catalyst 10.5 (internal version 8.73.2)
+
 * Thu Apr 29 2010 Stewart Adam <s.adam at diffingo.com> - 10.4-1
 - Update to Catalyst 10.4 (internal version 8.72.3)
 
