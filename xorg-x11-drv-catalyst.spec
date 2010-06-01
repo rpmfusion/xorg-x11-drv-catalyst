@@ -8,7 +8,7 @@
 
 Name:            xorg-x11-drv-catalyst
 Version:         10.5
-Release:         1%{?dist}
+Release:         1%{?dist}.1
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -321,6 +321,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Tue Jun 1 2010 Stewart Adam <s.adam at diffingo.com> - 10.5-1.1
+- Rebuild with correct sources
+
 * Thu May 27 2010 Stewart Adam <s.adam at diffingo.com> - 10.5-1
 - Update to Catalyst 10.5 (internal version 8.73.2)
 
