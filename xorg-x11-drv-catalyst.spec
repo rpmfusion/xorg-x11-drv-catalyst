@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.5
+Version:         10.7
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-5-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-7-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -54,7 +54,6 @@ Requires:        %{name}-libs%{_isa} = %{version}-%{release}
 Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
 %endif
 
-Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
 Requires(post):  livna-config-display
 Requires(preun): livna-config-display
 Requires(post):  chkconfig
@@ -260,7 +259,11 @@ if [ "${1}" -eq 1 ]; then
   # Add init script(s) and start it
   /sbin/chkconfig --add catalyst
   /sbin/chkconfig --add atieventsd
-  /etc/init.d/catalyst start &>/dev/null
+  /etc/init.d/catalyst start &>/dev/null ||:
+  if [ -x /sbin/grubby ] ; then
+    GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0 rdblacklist=radeon' &>/dev/null
+  fi
 fi ||:
 
 %post libs -p /sbin/ldconfig
@@ -320,6 +323,10 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Wed Jul 28 2010 Stewart Adam <s.adam at diffingo.com> - 10.7-1
+- Update to Catalyst 10.7 (internal version 8.75.3)
+- Improve post scriptlets (see RF#1262)
+
 * Thu May 27 2010 Stewart Adam <s.adam at diffingo.com> - 10.5-1
 - Update to Catalyst 10.5 (internal version 8.73.2)
 
