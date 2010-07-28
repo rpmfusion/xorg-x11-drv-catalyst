@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         9.4
-Release:         4%{?dist}
+Version:         10.7
+Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-9-4-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-7-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -24,11 +24,18 @@ Source8:         catalyst-a-ac-aticonfig
 Source9:         catalyst-a-lid-aticonfig
 Source10:        catalyst.sh
 Source11:        catalyst.csh
-Source13:        blacklist-radeon.conf
+# So we don't mess with mesa provides.
+Source91:        filter-requires.sh
+Source92:        filter-provides.sh
+%define          _use_internal_dependency_generator 0
+%define          __find_requires %{SOURCE91}
+%define          __find_provides %{SOURCE92}
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-%if 0%{?fedora} >= 11
+%if 0%{?fedora} > 11 || 0%{?rhel} > 5
+ExclusiveArch: i686 x86_64
+%else 0%{?fedora} == 11
 ExclusiveArch: i586 x86_64
 %else
 ExclusiveArch: i386 x86_64
@@ -36,10 +43,17 @@ ExclusiveArch: i386 x86_64
 
 Requires:        catalyst-kmod >= %{version}
 
+# It seems rpaths were introduced into the amdcccle/amdnotifyui binary in 9.12
+BuildRequires:   chrpath
 # Needed in all nvidia or fglrx driver packages
 BuildRequires:   desktop-file-utils
 Requires:        livna-config-display >= 0.0.23
+%if 0%{?fedora} > 10 || 0%{?rhel} > 5
+Requires:        %{name}-libs%{_isa} = %{version}-%{release}
+%else
 Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
+%endif
+
 Requires(post):  livna-config-display
 Requires(preun): livna-config-display
 Requires(post):  chkconfig
@@ -69,7 +83,7 @@ Conflicts:       ATI-fglrx-IA32-libs
 This package provides the most recent proprietary AMD display driver which
 allows for hardware accelerated rendering with ATI Mobility, FireGL and
 Desktop GPUs. Some of the Desktop and Mobility GPUs supported are the
-Radeon HD 2000 series to the Radeon HD 4800 series.
+Radeon HD 2xxx series to the Radeon HD 5xxx series.
 
 For the full product support list, please consult the release notes
 for release %{version}.
@@ -111,11 +125,11 @@ sed -i -e 's|strict=true|strict=false|' find-debuginfo.sh
 
 mkdir fglrxpkg
 %ifarch %{ix86}
-cp -r fglrx/common/* fglrx/x740/* fglrx/arch/x86/* fglrxpkg/
+cp -r fglrx/common/* fglrx/x750/* fglrx/arch/x86/* fglrxpkg/
 %endif
 
 %ifarch x86_64
-cp -r fglrx/common/* fglrx/x740_64a/* fglrx/arch/x86_64/* fglrxpkg/
+cp -r fglrx/common/* fglrx/x750_64a/* fglrx/arch/x86_64/* fglrxpkg/
 %endif
 
 # fix doc perms & copy README.Fedora
@@ -129,7 +143,7 @@ install -pm 0644 %{SOURCE1} ./README.Fedora
 rm -rf $RPM_BUILD_ROOT ./__doc
 
 set +x
-for file in $(cd fglrxpkg &> /dev/null; find . -type f | grep -v -e 'amdcccle.kdelnk$' -e 'amdcccle.desktop$' -e 'lib/modules/fglrx$' -e 'fireglcontrolpanel$' -e '/usr/share/doc/fglrx/' -e 'fglrx_panel_sources.tgz$' -e 'amdcccle.*.desktop$' -e 'amdcccle.*.kdelnk' -e 'fglrx_sample_source.tgz$' -e '^./lib/modules/fglrx' -e '/usr/share/icons/ccc_')
+for file in $(cd fglrxpkg &> /dev/null; find . -type f | grep -v -e 'amdcccle.kdelnk$' -e 'amdcccle.desktop$' -e 'lib/modules/fglrx$' -e 'fireglcontrolpanel$' -e '/usr/share/doc/fglrx/' -e 'fglrx_panel_sources.tgz$' -e 'amdcccle.*.desktop$' -e 'amdcccle.*.kdelnk' -e 'fglrx_sample_source.tgz$' -e '^./lib/modules/fglrx' -e '/usr/share/icons/ccc_' -e '^./usr/share/ati/lib')
 do
   if [[ ! "/${file##}" = "/${file}" ]]
   then
@@ -181,6 +195,9 @@ do
   elif [[ ! "/${file##./usr/share/ati/amdcccle}" = "/${file}" ]]
   then
     install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/${file}
+  elif [[ ! "/${file##./usr/share/doc/amdcccle}" = "/${file}" ]]
+  then
+    install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/${file}
   else
     echo ${file} found -- don\'t know how to handle
     exit 1
@@ -196,14 +213,13 @@ find $RPM_BUILD_ROOT/%{atilibdir} -type f -name "*.a" -exec chmod 0644 '{}' \;
 ln -s libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/libGL.so.1
 ln -s libfglrx_gamma.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_gamma.so.1
 ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_dm.so.1
-ln -s libfglrx_pp.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_pp.so.1
-ln -s libfglrx_tvout.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_tvout.so.1
+ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libAMDXvBA.so.1
+ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libXvBAW.so.1
 
 # profile.d files
 install -D -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.sh
 install -D -p -m 0644 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.csh
 
-install -D -p -m 0644 fglrxpkg/usr/share/icons/ccc_small.xpm $RPM_BUILD_ROOT/%{_datadir}/icons/ccc_small.xpm
 install -D -p -m 0644 fglrxpkg/usr/share/icons/ccc_large.xpm $RPM_BUILD_ROOT/%{_datadir}/icons/ccc_large.xpm
 install -D -p -m 0755 %{SOURCE3} $RPM_BUILD_ROOT%{_sbindir}/%(basename %{SOURCE3})
 install -D -p -m 0755 %{SOURCE4} $RPM_BUILD_ROOT%{_initrddir}/catalyst
@@ -228,9 +244,9 @@ find $RPM_BUILD_ROOT -type f -name '*.a' -exec chmod 0644 '{}' \;
 chmod 644 $RPM_BUILD_ROOT/%{_sysconfdir}/ati/*.xbm.example
 chmod 755 $RPM_BUILD_ROOT/%{_sysconfdir}/ati/*.sh
 
-# blacklist to prevent radeon autoloading
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/modprobe.d
-install -pm 0644 %{SOURCE13} $RPM_BUILD_ROOT%{_sysconfdir}/modprobe.d/blacklist-radeon.conf
+# Remove rpaths (see comment on chrpath BR above)
+chrpath --delete $RPM_BUILD_ROOT%{_bindir}/amdcccle
+chrpath --delete $RPM_BUILD_ROOT%{_sbindir}/amdnotifyui
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -243,7 +259,11 @@ if [ "${1}" -eq 1 ]; then
   # Add init script(s) and start it
   /sbin/chkconfig --add catalyst
   /sbin/chkconfig --add atieventsd
-  /etc/init.d/catalyst start &>/dev/null
+  /etc/init.d/catalyst start &>/dev/null ||:
+  if [ -x /sbin/grubby ] ; then
+    GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0 rdblacklist=radeon' &>/dev/null
+  fi
 fi ||:
 
 %post libs -p /sbin/ldconfig
@@ -263,6 +283,7 @@ fi ||:
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/share/doc/fglrx/* README.Fedora
 %dir %{_sysconfdir}/ati/
+%doc %{_docdir}/amdcccle/ccc_copyrights.txt
 %{_sysconfdir}/ati/atiogl.xml
 %{_sysconfdir}/ati/logo.xbm.example
 %{_sysconfdir}/ati/logo_mask.xbm.example
@@ -274,7 +295,6 @@ fi ||:
 %config %{_sysconfdir}/acpi/actions/ati-powermode.sh
 %config(noreplace) %{_sysconfdir}/acpi/events/*aticonfig.conf
 %config(noreplace) %{_sysconfdir}/profile.d/catalyst.*
-%config(noreplace) %{_sysconfdir}/modprobe.d/blacklist-radeon.conf
 %{_initrddir}/*
 %{_sbindir}/*
 %{_bindir}/*
@@ -300,11 +320,14 @@ fi ||:
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
 %{atilibdir}/*.a
-%{_libdir}/xorg/modules/*.a
-%{_includedir}/fglrx/GL/
-%{_includedir}/fglrx/X11/extensions/*.h
+%{_includedir}/fglrx/
 
 %changelog
+* Wed Jul 28 2010 Stewart Adam <s.adam at diffingo.com> - 10.7-1
+- Update to Catalyst 10.7 (internal version 8.75.3)
+- Integrate specfile changes made since 9.4 in F-12 branch
+- Improve post scriptlets (see RF#1262)
+
 * Sun May 3 2009 Stewart Adam <s.adam at diffingo.com> - 9.4-4
 - Make the ExclusiveArch dynamic
 - Fix requirement on libs subpackage
