@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.7
+Version:         10.8
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-7-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-8-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -262,7 +262,7 @@ if [ "${1}" -eq 1 ]; then
   /etc/init.d/catalyst start &>/dev/null ||:
   if [ -x /sbin/grubby ] ; then
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
-    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0 rdblacklist=radeon' &>/dev/null
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
   fi
 fi ||:
 
@@ -275,6 +275,11 @@ if [ "${1}" -eq 0 ]; then
   /etc/init.d/catalyst stop &>/dev/null
   /sbin/chkconfig --del catalyst
   /sbin/chkconfig --del atieventsd
+  if [ -x /sbin/grubby ] ; then
+    # leave rdblacklist here in case they installed with v10.7, which blacklisted radeon upon installation
+    GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --remove-args='radeon.modeset=0 rdblacklist=radeon' &>/dev/null
+  fi
 fi ||:
 
 %postun libs -p /sbin/ldconfig
@@ -323,6 +328,10 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Mon Aug 30 2010 Stewart Adam <s.adam at diffingo.com> - 10.8-1
+- Update to Catalyst 10.8 (internal version 8.76.2)
+- Remove radeon.modeset=0 and rdblacklist=radeon parameters in %%preun
+
 * Wed Jul 28 2010 Stewart Adam <s.adam at diffingo.com> - 10.7-1
 - Update to Catalyst 10.7 (internal version 8.75.3)
 - Integrate specfile changes made since 9.4 in F-12 branch
