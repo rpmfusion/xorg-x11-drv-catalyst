@@ -75,8 +75,21 @@ from rpmfusion.org and rebuild the kernel module with the following command:
 
 As of Catalyst version 9.10, the fglrx kernel module is no longer incompatible
 with the open-source Radeon Xorg driver. The initrd image regeneration
-workaround is therefore no longer required. However, during testing some
-systems failed to poweroff properly if kernel modesetting (KMS) was enabled. If
-you are affected by this problem, you can disable modesetting by executing the
-following command as root:
-    grubby --update-kernel=/boot/vmlinuz-`uname -r` --args=nomodeset
+workaround is therefore no longer required.
+
+However, during testing it was found that in some cases, kernel modesetting
+may need to be disabled in order for the fglrx driver to function correctly.
+Upon a fresh installation, the Catalyst driver will automatically add
+radeon.modeset=0 to the default kernel's parameters in /etc/grub.conf. If you
+are upgrading from a previous version of the Catalyst driver, you may have to
+make this change manually by running as root:
+    GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
+
+The Catalyst driver will automatically undo this change upon installation.
+Should you want to keep kernel modesetting disabled after uninstallation, run
+the same command above after uninstalling the Catalyst drivers and then reboot.
+
+For legacy reasons, the driver will also remove rdblacklist=radeon from the
+kernel parameters upon uninstallation.
+
