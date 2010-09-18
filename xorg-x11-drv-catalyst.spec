@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.8
+Version:         10.9
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-8-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-9-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -289,6 +289,7 @@ fi ||:
 %doc fglrxpkg/usr/share/doc/fglrx/* README.Fedora
 %dir %{_sysconfdir}/ati/
 %doc %{_docdir}/amdcccle/ccc_copyrights.txt
+%config(noreplace) %{_sysconfdir}/security/console.apps/amdcccle-su
 %{_sysconfdir}/ati/atiogl.xml
 %{_sysconfdir}/ati/logo.xbm.example
 %{_sysconfdir}/ati/logo_mask.xbm.example
@@ -328,6 +329,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Sat Sep 18 2010 Stewart Adam <s.adam at diffingo.com> - 10.9-1
+- Update to Catalyst 10.9 (internal version 8.77.1)
+
 * Mon Aug 30 2010 Stewart Adam <s.adam at diffingo.com> - 10.8-1
 - Update to Catalyst 10.8 (internal version 8.76.2)
 - Remove radeon.modeset=0 and rdblacklist=radeon parameters in %%preun
