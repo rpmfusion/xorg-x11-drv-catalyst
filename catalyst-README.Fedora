@@ -86,7 +86,7 @@ make this change manually by running as root:
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
     /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
 
-The Catalyst driver will automatically undo this change upon installation.
+The Catalyst driver will automatically undo this change upon uninstallation.
 Should you want to keep kernel modesetting disabled after uninstallation, run
 the same command above after uninstalling the Catalyst drivers and then reboot.
 
