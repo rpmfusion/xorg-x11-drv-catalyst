@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.11
+Version:         10.12
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-11-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-12-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -83,7 +83,7 @@ Conflicts:       ATI-fglrx-IA32-libs
 This package provides the most recent proprietary AMD display driver which
 allows for hardware accelerated rendering with ATI Mobility, FireGL and
 Desktop GPUs. Some of the Desktop and Mobility GPUs supported are the
-Radeon HD 2xxx series to the Radeon HD 5xxx series.
+Radeon HD 2xxx series to the Radeon HD 6xxx series.
 
 For the full product support list, please consult the release notes
 for release %{version}.
@@ -329,6 +329,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Sun Dec 26 2010 Stewart Adam <s.adam at diffingo.com> - 10.12-1
+- Update to Catalyst 10.12 (internal version 8.80.1)
+
 * Sat Nov 20 2010 Stewart Adam <s.adam at diffingo.com> - 10.11-1
 - Update to Catalyst 10.11 (internal version 8.79.1)
 
