@@ -8,7 +8,7 @@
 
 Name:            xorg-x11-drv-catalyst
 Version:         10.12
-Release:         1%{?dist}
+Release:         2%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -329,6 +329,10 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Wed Dec 29 2010 Stewart Adam <s.adam at diffingo.com> - 10.12-2
+- Fix semantic errors in catalyst-config-display that caused tracebacks on F-14
+- Remove VideoOverlay from xorg.conf as it is no longer used by the driver
+
 * Sun Dec 26 2010 Stewart Adam <s.adam at diffingo.com> - 10.12-1
 - Update to Catalyst 10.12 (internal version 8.80.1)
 - Merge changes from F-13 branch
