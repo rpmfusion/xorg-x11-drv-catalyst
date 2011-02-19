@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.12
-Release:         2%{?dist}
+Version:         11.2
+Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-12-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-2-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -125,11 +125,11 @@ sed -i -e 's|strict=true|strict=false|' find-debuginfo.sh
 
 mkdir fglrxpkg
 %ifarch %{ix86}
-cp -r fglrx/common/* fglrx/x760/* fglrx/arch/x86/* fglrxpkg/
+cp -r fglrx/common/* fglrx/xpic/* fglrx/arch/x86/* fglrxpkg/
 %endif
 
 %ifarch x86_64
-cp -r fglrx/common/* fglrx/x760_64a/* fglrx/arch/x86_64/* fglrxpkg/
+cp -r fglrx/common/* fglrx/xpic_64a/* fglrx/arch/x86_64/* fglrxpkg/
 %endif
 
 # fix doc perms & copy README.Fedora
@@ -326,9 +326,13 @@ fi ||:
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
 %{atilibdir}/*.a
+%{_libdir}/xorg/modules/*.a
 %{_includedir}/fglrx/
 
 %changelog
+* Sat Feb 19 2011 Stewart Adam <s.adam at diffingo.com> - 11.2-1
+- Update to Catalyst 11.2 (internal version 8.82.1)
+
 * Wed Dec 29 2010 Stewart Adam <s.adam at diffingo.com> - 10.12-2
 - Fix semantic errors in catalyst-config-display that caused tracebacks on F-14
 - Remove VideoOverlay from xorg.conf as it is no longer used by the driver
