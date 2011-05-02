@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         10.12
+Version:         11.4
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-10-12-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-4-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -125,11 +125,11 @@ sed -i -e 's|strict=true|strict=false|' find-debuginfo.sh
 
 mkdir fglrxpkg
 %ifarch %{ix86}
-cp -r fglrx/common/* fglrx/x750/* fglrx/arch/x86/* fglrxpkg/
+cp -r fglrx/common/* fglrx/xpic/* fglrx/arch/x86/* fglrxpkg/
 %endif
 
 %ifarch x86_64
-cp -r fglrx/common/* fglrx/x750_64a/* fglrx/arch/x86_64/* fglrxpkg/
+cp -r fglrx/common/* fglrx/xpic_64a/* fglrx/arch/x86_64/* fglrxpkg/
 %endif
 
 # fix doc perms & copy README.Fedora
@@ -210,11 +210,12 @@ find $RPM_BUILD_ROOT/%{atilibdir} -type f -name "*.a" -exec chmod 0644 '{}' \;
 
 # if we want versioned libs, then we need to change this and the loop above
 # to install the libs as soname.so.%{version}
-ln -s libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/libGL.so.1
+ln -s fglrx-libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/fglrx-libGL.so.1
 ln -s libfglrx_gamma.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_gamma.so.1
 ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_dm.so.1
 ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libAMDXvBA.so.1
 ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libXvBAW.so.1
+ln -s libatiuki.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libatiuki.so.1
 
 # profile.d files
 install -D -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.sh
@@ -276,7 +277,7 @@ if [ "${1}" -eq 0 ]; then
   /sbin/chkconfig --del catalyst
   /sbin/chkconfig --del atieventsd
   if [ -x /sbin/grubby ] ; then
-    # leave rdblacklist here in case they installed with v10.7, which blacklisted radeon upon installation
+    # remove rdblacklist from boot params in case they installed with v10.7, which blacklisted radeon upon installation
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
     /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --remove-args='radeon.modeset=0 rdblacklist=radeon' &>/dev/null
   fi
@@ -329,6 +330,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Mon May 2 2011 Stewart Adam <s.adam at diffingo.com> 11-4-1
+- Update to Catalyst 11.4 (internal version 8.84.1)
+
 * Sun Dec 26 2010 Stewart Adam <s.adam at diffingo.com> - 10.12-1
 - Update to Catalyst 10.12 (internal version 8.80.1)
 

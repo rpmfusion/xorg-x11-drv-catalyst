@@ -16,9 +16,9 @@
 # Copyright 2003, 2004 Peter Backlund
 # Copyright 2004 Thorsten Leemhuis
 # Copyright 2006, 2007 Van Assche Alphonse
-# Copyright 2006-2009 Stewart Adam
+# Copyright 2006-2010 Stewart Adam
 
-# internal revision: 2.0
+# internal revision: 2.1
 
 import os
 import sys
@@ -82,8 +82,8 @@ class catalystConfigDisplay(GlxConfig):
     if currentDriver != self.majorVendor:
       self.config.setOldDriver(currentDriver)
     self.toggleDriver(currentDriver, self.majorVendor)
-    self.addOption(self.majorVendor,"OpenGLOverlay" ,"off")
-    self.addOption(self.majorVendor,"VideoOverlay" ,"on")
+    self.addOption(self.majorVendor, "OpenGLOverlay", "off")
+    self.removeOption(self.majorVendor, "VideoOverlay")
     if self.xconfig.modules:
       for module in ["glx", "dri", "extmod"]:
         if self.onlyHasModule(module):
@@ -97,7 +97,7 @@ class catalystConfigDisplay(GlxConfig):
         x86_64Content = "/usr/lib/catalyst\n/usr/lib64/catalyst\n"
         Utils.writeFile(self.ldconf, x86_64Content)
       else:
-        Utils.writeFile(self.ldconf,"/usr/lib/catalyst\n")
+        Utils.writeFile(self.ldconf, "/usr/lib/catalyst\n")
       print _('Running ldconfig, this could take some time...')
       Utils.runLdconfig()
     Utils.writeXorgConf(self.xconfig, self.xconfigpath)
@@ -121,8 +121,8 @@ class catalystConfigDisplay(GlxConfig):
       print _('Using the \'radeon\' driver instead.')
       prevDriver = "radeon"
       self.config.setOldDriver("radeon")
-    self.removeOption(self.majorVendor,"OpenGLOverlay")
-    self.removeOption(self.majorVendor,"VideoOverlay")
+    self.removeOption(self.majorVendor, "OpenGLOverlay")
+    self.removeOption(self.majorVendor, "VideoOverlay")
     self.toggleDriver(self.majorVendor, prevDriver)
     # Let's give control back to the naitive DRI
     Utils.removeFile(self.ldconf)
@@ -140,7 +140,7 @@ class catalystConfigDisplay(GlxConfig):
     """Runs the appropriate autoconfiguation function"""
     # Check number of arguments
     # arg = action
-    if len(sys.argv) > 2:
+    if len(sys.argv) != 2:
       print _('Wrong number of arguments')
       self.printUsage()
       sys.exit(1)
@@ -159,7 +159,7 @@ class catalystConfigDisplay(GlxConfig):
       elif arg == "disable":
         if self.getActive():
           self.disable()
-    except error, errMsg:
+    except Exception, errMsg:
       #raise # Uncomment me to show the real error
       print MSG_CONF_APPLY_ERROR
       try:
