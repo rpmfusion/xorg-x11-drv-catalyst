@@ -332,7 +332,7 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
-* Mon May 2 2011 Stewart Adam <s.adam at diffingo.com> 11-4-1
+* Mon May 2 2011 Stewart Adam <s.adam at diffingo.com> 11.4-1
 - Update to Catalyst 11.4 (internal version 8.84.1)
 
 * Sat Feb 19 2011 Stewart Adam <s.adam at diffingo.com> - 11.2-1
