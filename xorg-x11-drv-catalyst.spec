@@ -320,6 +320,7 @@ fi ||:
 %defattr(-,root,root,-)
 %dir %{atilibdir}
 %{atilibdir}/*.so*
+%{atilibdir}/fglrx/*libGL*.so*
 %{atilibdir}/libAMDXvBA.cap
 %{_libdir}/dri/
 
@@ -327,6 +328,7 @@ fi ||:
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
 %{atilibdir}/*.a
+#%{_libdir}/xorg/modules/*.a
 %{_includedir}/fglrx/
 
 %changelog
