@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         11.4
+Version:         11.6
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-4-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-6-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -154,6 +154,9 @@ do
   elif [[ ! "/${file##./usr/X11R6/%{_lib}/modules/dri}" = "/${file}" ]]
   then
     install -D -p -m 0755 fglrxpkg/${file} $RPM_BUILD_ROOT/%{_prefix}/%{_lib}/dri/${file##./usr/X11R6/%{_lib}/modules/dri}
+  elif [[ ! "/${file##./usr/X11R6/%{_lib}/modules/extensions/fglrx}" = "/${file}" ]]
+  then
+    install -D -p -m 0755 fglrxpkg/${file} $RPM_BUILD_ROOT/%{_libdir}/xorg/modules/extensions/catalyst/${file##./usr/X11R6/%{_lib}/modules/extensions/fglrx}
   elif [[ ! "/${file##./usr/X11R6/%{_lib}/modules/extensions}" = "/${file}" ]]
   then
     install -D -p -m 0755 fglrxpkg/${file} $RPM_BUILD_ROOT/%{_libdir}/xorg/modules/extensions/catalyst/${file##./usr/X11R6/%{_lib}/modules/extensions}
@@ -168,9 +171,15 @@ do
   elif [[ ! "/${file##./usr/X11R6/include/X11/extensions}" = "/${file}" ]]
   then
     install -D -p -m 0644 fglrxpkg/${file} $RPM_BUILD_ROOT/%{_includedir}/fglrx/X11/extensions/${file##./usr/X11R6/include/X11/extensions}
+  elif [[ ! "/${file##./usr/%{_lib}/fglrx}" = "/${file}" ]]
+  then
+    install -D -p -m 0755 fglrxpkg/${file} $RPM_BUILD_ROOT/%{atilibdir}/${file##./usr/%{_lib}/fglrx}
   elif [[ ! "/${file##./usr/%{_lib}}" = "/${file}" ]]
   then
     install -D -p -m 0755 fglrxpkg/${file} $RPM_BUILD_ROOT/%{atilibdir}/${file##./usr/%{_lib}/}
+  elif [[ ! "/${file##./usr/X11R6/%{_lib}/fglrx}" = "/${file}" ]]
+  then
+    install -D -p -m 0755 fglrxpkg/${file} $RPM_BUILD_ROOT/%{atilibdir}/${file##./usr/X11R6/%{_lib}/fglrx}
   elif [[ ! "/${file##./usr/X11R6/%{_lib}/}" = "/${file}" ]]
   then
     install -D -p -m 0755 fglrxpkg/${file} $RPM_BUILD_ROOT/%{atilibdir}/${file##./usr/X11R6/%{_lib}/}
@@ -208,9 +217,13 @@ set -x
 # Change perms on static libs. Can't fathom how to do it nicely above.
 find $RPM_BUILD_ROOT/%{atilibdir} -type f -name "*.a" -exec chmod 0644 '{}' \;
 
+# Remove the fglrx prefix on some of the new library filenames
+mv $RPM_BUILD_ROOT/%{atilibdir}/{fglrx-,}libGL.so.1.2
+mv $RPM_BUILD_ROOT/%{_libdir}/xorg/modules/extensions/catalyst/{fglrx-,}libglx.so
+
 # if we want versioned libs, then we need to change this and the loop above
 # to install the libs as soname.so.%{version}
-ln -s fglrx-libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/fglrx-libGL.so.1
+ln -s libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/libGL.so.1
 ln -s libfglrx_gamma.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_gamma.so.1
 ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_dm.so.1
 ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libAMDXvBA.so.1
@@ -320,7 +333,8 @@ fi ||:
 %defattr(-,root,root,-)
 %dir %{atilibdir}
 %{atilibdir}/*.so*
-%{atilibdir}/fglrx/*libGL*.so*
+%{atilibdir}/switchlibGL
+%{atilibdir}/switchlibglx
 %{atilibdir}/libAMDXvBA.cap
 %{_libdir}/dri/
 
@@ -332,6 +346,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Sat Jun 18 2011 Stewart Adam <s.adam at diffingo.com> 11.6-1
+* Update to Catalyst 11.6 (internal version 8.86.1)
+
 * Mon May 2 2011 Stewart Adam <s.adam at diffingo.com> 11.4-1
 - Update to Catalyst 11.4 (internal version 8.84.1)
 
