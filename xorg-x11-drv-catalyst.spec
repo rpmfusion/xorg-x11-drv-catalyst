@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         11.7
+Version:         11.9
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-7-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-9-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -113,7 +113,7 @@ This package provides the shared libraries for %{name}.
 %prep
 %setup -q -c -T
 sh %{SOURCE0} --extract fglrx
-tar -cjf catalyst-kmod-data-%{version}.tar.bz2 fglrx/common/usr/share/doc/fglrx/ATI_LICENSE.TXT \
+tar -cjf catalyst-kmod-data-%{version}.tar.bz2 fglrx/common/usr/share/doc/fglrx/LICENSE.TXT \
                                             fglrx/common/*/modules/fglrx/ \
                                             fglrx/arch/*/*/modules/fglrx/
 
@@ -346,6 +346,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Wed Sep 28 2011 Stewart Adam <s.adam at diffingo.com> 11.9-1
+- Update to Catalyst 11.9 (internal version 8.89.2)
+
 * Fri Jul 29 2011 Stewart Adam <s.adam at diffingo.com> 11.7-1
 - Update to Catalyst 11.7 (internal version 8.87.2)
 - Fix previous changelog entry format
