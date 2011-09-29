@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         11.7
+Version:         11.9
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-7-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-9-x86.x86_64.run
 Source1:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
@@ -22,8 +22,6 @@ Source6:         catalyst-atieventsd.init
 Source7:         catalyst-ati-powermode.sh
 Source8:         catalyst-a-ac-aticonfig
 Source9:         catalyst-a-lid-aticonfig
-Source10:        catalyst.sh
-Source11:        catalyst.csh
 # So we don't mess with mesa provides.
 Source91:        filter-requires.sh
 Source92:        filter-provides.sh
@@ -113,7 +111,7 @@ This package provides the shared libraries for %{name}.
 %prep
 %setup -q -c -T
 sh %{SOURCE0} --extract fglrx
-tar -cjf catalyst-kmod-data-%{version}.tar.bz2 fglrx/common/usr/share/doc/fglrx/ATI_LICENSE.TXT \
+tar -cjf catalyst-kmod-data-%{version}.tar.bz2 fglrx/common/usr/share/doc/fglrx/LICENSE.TXT \
                                             fglrx/common/*/modules/fglrx/ \
                                             fglrx/arch/*/*/modules/fglrx/
 
@@ -224,15 +222,10 @@ mv $RPM_BUILD_ROOT/%{_libdir}/xorg/modules/extensions/catalyst/{fglrx-,}libglx.s
 # if we want versioned libs, then we need to change this and the loop above
 # to install the libs as soname.so.%{version}
 ln -s libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/libGL.so.1
-ln -s libfglrx_gamma.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_gamma.so.1
 ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_dm.so.1
 ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libAMDXvBA.so.1
 ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libXvBAW.so.1
 ln -s libatiuki.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libatiuki.so.1
-
-# profile.d files
-install -D -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.sh
-install -D -p -m 0644 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.csh
 
 install -D -p -m 0644 fglrxpkg/usr/share/icons/ccc_large.xpm $RPM_BUILD_ROOT/%{_datadir}/icons/ccc_large.xpm
 install -D -p -m 0755 %{SOURCE3} $RPM_BUILD_ROOT%{_sbindir}/%(basename %{SOURCE3})
@@ -314,7 +307,6 @@ fi ||:
 %config %{_sysconfdir}/ati/authatieventsd.sh
 %config %{_sysconfdir}/acpi/actions/ati-powermode.sh
 %config(noreplace) %{_sysconfdir}/acpi/events/*aticonfig.conf
-%config(noreplace) %{_sysconfdir}/profile.d/catalyst.*
 %{_initrddir}/*
 %{_sbindir}/*
 %{_bindir}/*
@@ -346,6 +338,9 @@ fi ||:
 %{_includedir}/fglrx/
 
 %changelog
+* Wed Sep 28 2011 Stewart Adam <s.adam at diffingo.com> 11.9-1
+- Update to Catalyst 11.9 (internal version 8.89.2)
+
 * Fri Jul 29 2011 Stewart Adam <s.adam at diffingo.com> 11.7-1
 - Update to Catalyst 11.7 (internal version 8.87.2)
 - Fix previous changelog entry format
