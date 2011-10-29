@@ -8,13 +8,14 @@
 
 Name:            xorg-x11-drv-catalyst
 Version:         11.9
-Release:         1%{?dist}
+Release:         2%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
 Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-9-x86.x86_64.run
-Source1:         catalyst-README.Fedora
+Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
+Source2:         catalyst-README.Fedora
 Source3:         catalyst-config-display
 Source4:         catalyst-init
 Source5:         amdcccle.desktop
@@ -22,14 +23,6 @@ Source6:         catalyst-atieventsd.init
 Source7:         catalyst-ati-powermode.sh
 Source8:         catalyst-a-ac-aticonfig
 Source9:         catalyst-a-lid-aticonfig
-Source10:        catalyst.sh
-Source11:        catalyst.csh
-# So we don't mess with mesa provides.
-Source91:        filter-requires.sh
-Source92:        filter-provides.sh
-%define          _use_internal_dependency_generator 0
-%define          __find_requires %{SOURCE91}
-%define          __find_provides %{SOURCE92}
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -43,21 +36,22 @@ ExclusiveArch: i386 x86_64
 
 Requires:        catalyst-kmod >= %{version}
 
-# It seems rpaths were introduced into the amdcccle/amdnotifyui binary in 9.12
-BuildRequires:   chrpath
 # Needed in all nvidia or fglrx driver packages
 BuildRequires:   desktop-file-utils
-Requires:        livna-config-display >= 0.0.23
+# It seems rpaths were introduced into the amdcccle/amdnotifyui binary in 9.12
+BuildRequires:   chrpath
 %if 0%{?fedora} > 10 || 0%{?rhel} > 5
 Requires:        %{name}-libs%{_isa} = %{version}-%{release}
 %else
 Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
 %endif
 
+Requires:        livna-config-display >= 0.0.23
+
 Requires(post):  livna-config-display
-Requires(preun): livna-config-display
 Requires(post):  chkconfig
 
+Requires(preun): livna-config-display
 Requires(preun): chkconfig
 
 Provides:        catalyst-kmod-common = %{version}
@@ -79,6 +73,12 @@ Conflicts:       ATI-fglrx-devel
 Conflicts:       kernel-module-ATI-fglrx
 Conflicts:       ATI-fglrx-IA32-libs
 
+%{?filter_setup:
+%filter_from_provides /^libGL\.so/d;
+%filter_from_requires /^libGL\.so/d;
+%filter_setup
+}
+
 %description
 This package provides the most recent proprietary AMD display driver which
 allows for hardware accelerated rendering with ATI Mobility, FireGL and
@@ -92,7 +92,11 @@ for release %{version}.
 %package devel
 Summary:         Development files for %{name}
 Group:           Development/Libraries
+%if 0%{?fedora} > 10 || 0%{?rhel} > 5
+Requires:        %{name}-libs%{_isa} = %{version}-%{release}
+%else
 Requires:        %{name}-libs-%{_target_cpu} = %{version}-%{release}
+%endif
 
 %description devel
 This package provides the development files of the %{name}
@@ -112,7 +116,16 @@ This package provides the shared libraries for %{name}.
 
 %prep
 %setup -q -c -T
+# Extract fglrx driver
 sh %{SOURCE0} --extract fglrx
+
+# Extract XvBA devel files
+mkdir amdxvba
+pushd amdxvba
+tar xfz %{SOURCE1}
+popd
+
+# Create tarball of kmod data for use later
 tar -cjf catalyst-kmod-data-%{version}.tar.bz2 fglrx/common/usr/share/doc/fglrx/LICENSE.TXT \
                                             fglrx/common/*/modules/fglrx/ \
                                             fglrx/arch/*/*/modules/fglrx/
@@ -134,10 +147,14 @@ cp -r fglrx/common/* fglrx/xpic_64a/* fglrx/arch/x86_64/* fglrxpkg/
 
 # fix doc perms & copy README.Fedora
 find fglrxpkg/usr/share/doc/fglrx -type f -exec chmod 0644 {} \;
-install -pm 0644 %{SOURCE1} ./README.Fedora
+install -pm 0644 %{SOURCE2} ./README.Fedora
+
+# Set the correct path for gdm's Xauth file before we install it in the loop below
+sed -i -e 's|GDM_AUTH_FILE=/var/lib/gdm/$1.Xauth|GDM_AUTH_FILE=/var/gdm/$1.Xauth|' fglrxpkg/etc/ati/authatieventsd.sh
 
 %build
-
+# Nothing to build
+echo "Nothing to build"
 
 %install
 rm -rf $RPM_BUILD_ROOT ./__doc
@@ -214,28 +231,34 @@ do
 done
 set -x
 
+# Install XvBA headers
+install -D -p -m 0644 amdxvba/include/amdxvba.h $RPM_BUILD_ROOT%{_includedir}/fglrx
+
+# Remove switching scripts
+rm -f $RPM_BUILD_ROOT%{atilibdir}/switchlibGL
+rm -f $RPM_BUILD_ROOT%{atilibdir}/switchlibglx
+
+# Remove some 'fglrx-' prefixes
+mv $RPM_BUILD_ROOT%{atilibdir}/{fglrx-,}libGL.so.1.2
+mv $RPM_BUILD_ROOT%{_libdir}/xorg/modules/extensions/catalyst/{fglrx-,}libglx.so
+
+# Move XvBA data file to correct location
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
+mv $RPM_BUILD_ROOT%{atilibdir}/libAMDXvBA.cap $RPM_BUILD_ROOT%{_prefix}/lib
+
 # Change perms on static libs. Can't fathom how to do it nicely above.
-find $RPM_BUILD_ROOT/%{atilibdir} -type f -name "*.a" -exec chmod 0644 '{}' \;
+find $RPM_BUILD_ROOT%{atilibdir} -type f -name "*.a" -exec chmod 0644 '{}' \;
 
-# Remove the fglrx prefix on some of the new library filenames
-mv $RPM_BUILD_ROOT/%{atilibdir}/{fglrx-,}libGL.so.1.2
-mv $RPM_BUILD_ROOT/%{_libdir}/xorg/modules/extensions/catalyst/{fglrx-,}libglx.so
-
-# if we want versioned libs, then we need to change this and the loop above
+# If we want versioned libs, then we need to change this and the loop above
 # to install the libs as soname.so.%{version}
-ln -s libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/libGL.so.1
-ln -s libfglrx_gamma.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_gamma.so.1
+ln -s fglrx-libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/fglrx-libGL.so.1
 ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_dm.so.1
 ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libAMDXvBA.so.1
 ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libXvBAW.so.1
 ln -s libatiuki.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libatiuki.so.1
 
-# profile.d files
-install -D -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.sh
-install -D -p -m 0644 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/catalyst.csh
-
 install -D -p -m 0644 fglrxpkg/usr/share/icons/ccc_large.xpm $RPM_BUILD_ROOT/%{_datadir}/icons/ccc_large.xpm
-install -D -p -m 0755 %{SOURCE3} $RPM_BUILD_ROOT%{_sbindir}/%(basename %{SOURCE3})
+install -D -p -m 0755 %{SOURCE3} $RPM_BUILD_ROOT%{_sbindir}/catalyst-config-display
 install -D -p -m 0755 %{SOURCE4} $RPM_BUILD_ROOT%{_initrddir}/catalyst
 install -D -p -m 0755 %{SOURCE6} $RPM_BUILD_ROOT%{_initrddir}/atieventsd
 install -D -p -m 0755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/acpi/actions/ati-powermode.sh
@@ -246,9 +269,6 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
 desktop-file-install --vendor rpmfusion \
     --dir $RPM_BUILD_ROOT%{_datadir}/applications \
     %{SOURCE5}
-
-# Set the correct path for gdm's Xauth file
-sed -i 's|GDM_AUTH_FILE=/var/lib/gdm/$1.Xauth|GDM_AUTH_FILE=/var/gdm/$1.Xauth|' fglrxpkg/etc/ati/authatieventsd.sh
 
 # Fix odd perms
 find fglrxpkg -type f -perm 0555 -exec chmod 0755 '{}' \;
@@ -267,13 +287,21 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %post
+# Update the user's version numbers in the AMD Control Center. Replacement
+# values can be obtained by executing:
+# cat fglrxpkg/etc/ati/amdpcsdb.default | grep -i version
+if [ -f %{_sysconfdir}/amdpcsdb ];then
+  sed -i -e 's|ReleaseVersion=.*|S8.892-110914m-125703C-ATI|' %{_sysconfdir}/amdpcsdb
+  sed -i -e 's|Catalyst_Version=.*|S11.9|' %{_sysconfdir}/amdpcsdb
+fi ||:
+
 if [ "${1}" -eq 1 ]; then
   # Enable catalyst driver when installing
   %{_sbindir}/catalyst-config-display enable &>/dev/null
   # Add init script(s) and start it
   /sbin/chkconfig --add catalyst
   /sbin/chkconfig --add atieventsd
-  /etc/init.d/catalyst start &>/dev/null ||:
+  /etc/init.d/catalyst start &>/dev/null
   if [ -x /sbin/grubby ] ; then
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
     /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
@@ -286,8 +314,9 @@ fi ||:
 if [ "${1}" -eq 0 ]; then
   # Disable driver on final removal
   test -f %{_sbindir}/catalyst-config-display && %{_sbindir}/catalyst-config-display disable &>/dev/null
-  /etc/init.d/catalyst stop &>/dev/null
+  /sbin/service catalyst stop >/dev/null 2>&1
   /sbin/chkconfig --del catalyst
+  /sbin/service atieventsd stop >/dev/null 2>&1
   /sbin/chkconfig --del atieventsd
   if [ -x /sbin/grubby ] ; then
     # remove rdblacklist from boot params in case they installed with v10.7, which blacklisted radeon upon installation
@@ -314,38 +343,37 @@ fi ||:
 %config %{_sysconfdir}/ati/authatieventsd.sh
 %config %{_sysconfdir}/acpi/actions/ati-powermode.sh
 %config(noreplace) %{_sysconfdir}/acpi/events/*aticonfig.conf
-%config(noreplace) %{_sysconfdir}/profile.d/catalyst.*
 %{_initrddir}/*
 %{_sbindir}/*
 %{_bindir}/*
-# Xorg libs that do not need to be multilib
+# no_multilib
 %{_libdir}/xorg/modules/drivers/fglrx_drv.so
 %{_libdir}/xorg/modules/linux/libfglrxdrm.so
-#/no_multilib
+%{_libdir}/xorg/modules/extensions/catalyst/
+%{_libdir}/xorg/modules/*.so
+%{_prefix}/lib/libAMDXvBA.cap
+# /no_multilib
 %{_datadir}/applications/*amdcccle.desktop
 %{_datadir}/ati/amdcccle/*
 %{_datadir}/icons/*
 %{_mandir}/man[1-9]/atieventsd.*
-%{_libdir}/xorg/modules/extensions/catalyst/
-%{_libdir}/xorg/modules/*.so
 
 %files libs
 %defattr(-,root,root,-)
 %dir %{atilibdir}
 %{atilibdir}/*.so*
-%{atilibdir}/switchlibGL
-%{atilibdir}/switchlibglx
-%{atilibdir}/libAMDXvBA.cap
 %{_libdir}/dri/
 
 %files devel
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
 %{atilibdir}/*.a
-#%{_libdir}/xorg/modules/*.a
 %{_includedir}/fglrx/
 
 %changelog
+* Fri Oct 28 2011 Stewart Adam <s.adam at diffingo.com> 11.9-2
+- Fix several packaging bugs (#1932, #1965)
+
 * Wed Sep 28 2011 Stewart Adam <s.adam at diffingo.com> 11.9-1
 - Update to Catalyst 11.9 (internal version 8.89.2)
 
