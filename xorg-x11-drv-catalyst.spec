@@ -8,7 +8,7 @@
 
 Name:            xorg-x11-drv-catalyst
 Version:         11.9
-Release:         2%{?dist}
+Release:         3%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -123,6 +123,9 @@ sh %{SOURCE0} --extract fglrx
 mkdir amdxvba
 pushd amdxvba
 tar xfz %{SOURCE1}
+# rename docs
+mv -f LICENSE AMD_XvBA_LICENSE
+mv -f README AMD_XvBA_README
 popd
 
 # Create tarball of kmod data for use later
@@ -245,17 +248,23 @@ mv $RPM_BUILD_ROOT%{_libdir}/xorg/modules/extensions/catalyst/{fglrx-,}libglx.so
 # Move XvBA data file to correct location
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
 mv $RPM_BUILD_ROOT%{atilibdir}/libAMDXvBA.cap $RPM_BUILD_ROOT%{_prefix}/lib
+chmod 0644 $RPM_BUILD_ROOT%{_prefix}/lib/libAMDXvBA.cap
 
 # Change perms on static libs. Can't fathom how to do it nicely above.
 find $RPM_BUILD_ROOT%{atilibdir} -type f -name "*.a" -exec chmod 0644 '{}' \;
 
 # If we want versioned libs, then we need to change this and the loop above
 # to install the libs as soname.so.%{version}
-ln -s fglrx-libGL.so.1.2 $RPM_BUILD_ROOT/%{atilibdir}/fglrx-libGL.so.1
-ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libfglrx_dm.so.1
-ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libAMDXvBA.so.1
-ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libXvBAW.so.1
-ln -s libatiuki.so.1.0 $RPM_BUILD_ROOT/%{atilibdir}/libatiuki.so.1
+ln -s libGL.so.1.2 $RPM_BUILD_ROOT%{atilibdir}/libGL.so.1
+ln -s libGL.so.1.2 $RPM_BUILD_ROOT%{atilibdir}/libGL.so
+ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libfglrx_dm.so.1
+ln -s libfglrx_dm.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libfglrx_dm.so
+ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libAMDXvBA.so.1
+ln -s libAMDXvBA.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libAMDXvBA.so
+ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libXvBAW.so.1
+ln -s libXvBAW.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libXvBAW.so
+ln -s libatiuki.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libatiuki.so.1
+ln -s libatiuki.so.1.0 $RPM_BUILD_ROOT%{atilibdir}/libatiuki.so
 
 install -D -p -m 0644 fglrxpkg/usr/share/icons/ccc_large.xpm $RPM_BUILD_ROOT/%{_datadir}/icons/ccc_large.xpm
 install -D -p -m 0755 %{SOURCE3} $RPM_BUILD_ROOT%{_sbindir}/catalyst-config-display
@@ -282,17 +291,28 @@ chmod 755 $RPM_BUILD_ROOT/%{_sysconfdir}/ati/*.sh
 chrpath --delete $RPM_BUILD_ROOT%{_bindir}/amdcccle
 chrpath --delete $RPM_BUILD_ROOT%{_sbindir}/amdnotifyui
 
+# ld.so.conf.d file
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/ld.so.conf.d
+touch $RPM_BUILD_ROOT%{_sysconfdir}/ld.so.conf.d/catalyst-%{_lib}.conf
+
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 
 %post
-# Update the user's version numbers in the AMD Control Center. Replacement
-# values can be obtained by executing:
-# cat fglrxpkg/etc/ati/amdpcsdb.default | grep -i version
+# Update the user's version numbers in the AMD Control Center.
 if [ -f %{_sysconfdir}/amdpcsdb ];then
-  sed -i -e 's|ReleaseVersion=.*|S8.892-110914m-125703C-ATI|' %{_sysconfdir}/amdpcsdb
-  sed -i -e 's|Catalyst_Version=.*|S11.9|' %{_sysconfdir}/amdpcsdb
+  ReleaseVersion=$(sed '/ReleaseVersion=S/!d; s/ReleaseVersion=S//' %{_sysconfdir}/ati/amdpcsdb.default 2>/dev/null)
+  if [ -n "${ReleaseVersion}" ]; then
+    %{_bindir}/aticonfig --del-pcs-key=LDC,ReleaseVersion >/dev/null 2>&1
+    %{_bindir}/aticonfig --set-pcs-str=LDC,ReleaseVersion,${ReleaseVersion} >/dev/null 2>&1
+  fi
+  Catalyst_Version=$(sed '/Catalyst_Version=S/!d; s/Catalyst_Version=S//' %{_sysconfdir}/ati/amdpcsdb.default 2>/dev/null)
+  if [ -n "${Catalyst_Version}" ]; then
+    %{_bindir}/aticonfig --del-pcs-key=LDC,Catalyst_Version >/dev/null 2>&1
+    %{_bindir}/aticonfig --set-pcs-str=LDC,Catalyst_Version,${Catalyst_Version} >/dev/null 2>&1
+  fi
 fi ||:
 
 if [ "${1}" -eq 1 ]; then
@@ -301,7 +321,8 @@ if [ "${1}" -eq 1 ]; then
   # Add init script(s) and start it
   /sbin/chkconfig --add catalyst
   /sbin/chkconfig --add atieventsd
-  /etc/init.d/catalyst start &>/dev/null
+  /sbin/service catalyst start >/dev/null 2>&1
+  /sbin/service atieventsd start >/dev/null 2>&1
   if [ -x /sbin/grubby ] ; then
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
     /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
@@ -360,6 +381,7 @@ fi ||:
 
 %files libs
 %defattr(-,root,root,-)
+%ghost %{_sysconfdir}/ld.so.conf.d/catalyst-%{_lib}.conf
 %dir %{atilibdir}
 %{atilibdir}/*.so*
 %{_libdir}/dri/
@@ -367,10 +389,22 @@ fi ||:
 %files devel
 %defattr(-,root,root,-)
 %doc fglrxpkg/usr/src/ati/fglrx_sample_source.tgz
+%doc amdxvba/doc/AMD_XvBA_Spec_v0_74_01_AES_2.pdf
+%doc amdxvba/AMD_XvBA_LICENSE amdxvba/AMD_XvBA_README
 %{atilibdir}/*.a
 %{_includedir}/fglrx/
+# enumerate development symlinks
+%{atilibdir}/libGL.so
+%{atilibdir}/libfglrx_dm.so
+%{atilibdir}/libAMDXvBA.so
+%{atilibdir}/libXvBAW.so
+%{atilibdir}/libatiuki.so
 
 %changelog
+* Fri Nov 04 2011 Nicolas Chauvet <kwizart@gmail.com> - 11.9-3
+- Various fixes from rfbz#1965
+- Ghost catalyst libraries directory in ld.so.conf.d
+
 * Fri Oct 28 2011 Stewart Adam <s.adam at diffingo.com> 11.9-2
 - Fix several packaging bugs (#1932, #1965)
 
@@ -386,7 +420,17 @@ fi ||:
 
 * Mon May 2 2011 Stewart Adam <s.adam at diffingo.com> 11.4-1
 - Update to Catalyst 11.4 (internal version 8.84.1)
-- Port changes from F-14 branch
+
+* Sat Feb 19 2011 Stewart Adam <s.adam at diffingo.com> - 11.2-1
+- Update to Catalyst 11.2 (internal version 8.82.1)
+
+* Wed Dec 29 2010 Stewart Adam <s.adam at diffingo.com> - 10.12-2
+- Fix semantic errors in catalyst-config-display that caused tracebacks on F-14
+- Remove VideoOverlay from xorg.conf as it is no longer used by the driver
+
+* Sun Dec 26 2010 Stewart Adam <s.adam at diffingo.com> - 10.12-1
+- Update to Catalyst 10.12 (internal version 8.80.1)
+- Merge changes from F-13 branch
 
 * Sun May 3 2009 Stewart Adam <s.adam at diffingo.com> - 9.4-4
 - Make the ExclusiveArch dynamic
