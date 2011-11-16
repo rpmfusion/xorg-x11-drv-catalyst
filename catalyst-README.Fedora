@@ -12,14 +12,13 @@ The hard way depends on your hardware and your configuration:
 Check if you have loaded the module "radeon". If not simply log out of your
 X session to restart X -- the catalyst driver should now be loaded if there is
 a proper kernel-module installed. You can also run:
-    /etc/init.d/catalyst status
-to see if you need a reboot. If you read:
-    Initscript is running.
-    Driver is enabled.
-You don't need a reboot. If you have loaded the radeon driver log out of
-your X session, log in again, issue the command:
+    modprobe fglrx
+to force the fglrx kernel module to load.
+
+If you have loaded the radeon driver, log out of your X session, log in again
+and issue the command:
     /sbin/rmmod radeon
-and end your X session once again.
+then end your X session once again.
 
 To check that hardware acceleration is working, issue the following command
 in a terminal:
@@ -39,15 +38,11 @@ If it does, you're all set.
 
 The installation scripts perform the basic configuration for you.
 When (if) you uninstall the drivers, the configuration is reset to
-use the X.org/XFree86 radeon driver again. If you want to temporarily disable
-the fglrx drivers without uninstalling, you can issue the following
-two commands as root (remember su -):
-    catalyst-config-display disable
-Note: DRI will be disabled in this case when the fglrx kernel-module was
-loaded. It will be enabled again on the next system restart.
-To re-enable the fglrx drivers without a reboot, run:
-    catalyst-config-display enable
-
+use the default autodetected driver again. If you want to temporarily disable
+the fglrx drivers without uninstalling, look inside /etc/X11/xorg.conf.d and
+backup any files with a filename matching the pattern XY-catalyst-* and then
+restart your X session. To re-enable the drivers, replace these files to their
+original state.
 
 
 3. Additional configuration
@@ -73,22 +68,11 @@ from rpmfusion.org and rebuild the kernel module with the following command:
 5. Release-specific notes
 -----------------------------
 
-As of Catalyst version 9.10, the fglrx kernel module is no longer incompatible
-with the open-source Radeon Xorg driver. The initrd image regeneration
-workaround is therefore no longer required.
+Please note that this release was not written to run correctly on the Xorg
+server version included with Fedora 16 and will likely fail to operate correctly
+with most, if not all, graphic cards.
 
-However, during testing it was found that in some cases, kernel modesetting
-may need to be disabled in order for the fglrx driver to function correctly.
-Upon a fresh installation, the Catalyst driver will automatically add
-radeon.modeset=0 to the default kernel's parameters in /etc/grub.conf. If you
-are upgrading from a previous version of the Catalyst driver, you may have to
-make this change manually by running as root:
-    GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
-    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
+During testing it was found that in some cases, kernel modesetting may need to
+disabled in order for the fglrx driver to function correctly. You may want to
+edit /etc/grub2.cfg manually and add the 'nomodeset' kernel parameter.
 
-The Catalyst driver will automatically undo this change upon uninstallation.
-Should you want to keep kernel modesetting disabled after uninstallation, run
-the same command above after uninstalling the Catalyst drivers and then reboot.
-
-For legacy reasons, the driver will also remove rdblacklist=radeon from the
-kernel parameters upon uninstallation.
