@@ -5,7 +5,7 @@
 %global	   __strip /bin/true
 Name:            xorg-x11-drv-catalyst
 Version:         11.11
-Release:         1%{?dist}
+Release:         3%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -345,7 +345,7 @@ fi ||:
 # OpenCL files
 %dir %{_sysconfdir}/OpenCL
 %dir %{_sysconfdir}/OpenCL/vendors
-%config %{_sysconfdir}/OpenCL/vendors/amdocl64.icd
+%config %{_sysconfdir}/OpenCL/vendors/amd*.icd
 # These next two files control "supported hardware" verification
 %{_sysconfdir}/ati/signature
 %{_sysconfdir}/ati/control
@@ -390,6 +390,12 @@ fi ||:
 
 
 %changelog
+* Wed Nov 16 2011 Stewart Adam <s.adam at diffingo.com> - 11.11-3
+- Bump because of rawhide tagging issue
+
+* Wed Nov 16 2011 Stewart Adam <s.adam at diffingo.com> - 11.11-2
+- Fix OpenCL vendor configuration file path
+
 * Wed Nov 16 2011 Stewart Adam <s.adam at diffingo.com> 11.11-1
 - Update to Catalyst 11.11 (internal version 8.91.1)
 - Fix several packaging bugs (#1932, #1965)
