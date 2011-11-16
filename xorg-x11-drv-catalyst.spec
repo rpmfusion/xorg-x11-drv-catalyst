@@ -7,13 +7,13 @@
 %endif
 
 Name:            xorg-x11-drv-catalyst
-Version:         11.9
-Release:         3%{?dist}
+Version:         11.11
+Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-9-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-11-x86.x86_64.run
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         catalyst-config-display
@@ -358,6 +358,10 @@ fi ||:
 %{_sysconfdir}/ati/logo.xbm.example
 %{_sysconfdir}/ati/logo_mask.xbm.example
 %{_sysconfdir}/ati/amdpcsdb.default
+# OpenCL files
+%dir %{_sysconfdir}/OpenCL
+%dir %{_sysconfdir}/OpenCL/vendors
+%config %{_sysconfdir}/OpenCL/vendors/amdocl64.icd
 # These next two files control "supported hardware" verification
 %{_sysconfdir}/ati/signature
 %{_sysconfdir}/ati/control
@@ -401,6 +405,9 @@ fi ||:
 %{atilibdir}/libatiuki.so
 
 %changelog
+* Wed Nov 16 2011 Stewart Adam <s.adam at diffingo.com> 11.11-1
+- Update to Catalyst 11.11 (internal version 8.91.1)
+
 * Fri Nov 04 2011 Nicolas Chauvet <kwizart@gmail.com> - 11.9-3
 - Various fixes from rfbz#1965
 - Ghost catalyst libraries directory in ld.so.conf.d
