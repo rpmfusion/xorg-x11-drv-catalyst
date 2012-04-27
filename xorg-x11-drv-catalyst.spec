@@ -4,13 +4,13 @@
 
 %global	   __strip /bin/true
 Name:            xorg-x11-drv-catalyst
-Version:         12.3
+Version:         12.4
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/amd-driver-installer-12-3-x86.x86_64.run
+Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/amd-driver-installer-12-4-x86.x86_64.run
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         amdcccle.desktop
@@ -394,6 +394,9 @@ fi ||:
 
 
 %changelog
+* Fri Apr 27 2012 leigh scott <leigh123linux@googlemail.com> - 12.4-1
+- Update to Catalyst 12.4 (internal version 8.961)
+
 * Fri Mar 30 2012 leigh scott <leigh123linux@googlemail.com> - 12.3-1
 - Update to Catalyst 12.3 (internal version 8.951)
 
