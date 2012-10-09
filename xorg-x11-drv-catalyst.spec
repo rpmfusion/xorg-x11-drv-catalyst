@@ -1,16 +1,16 @@
-%define          atilibdir       %{_libdir}/catalyst
+%global          atilibdir       %{_libdir}/catalyst
+%global          amdrun          amd-driver-installer-12-9-beta-x86.x86_64.run
+%global    debug_package %{nil}    
 
-%global	   debug_package %{nil}
-
-%global	   __strip /bin/true
+%global    __strip /bin/true
 Name:            xorg-x11-drv-catalyst
-Version:         11.11
-Release:         3%{?dist}
+Version:         12.9
+Release:         0.1.beta%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-11-x86.x86_64.run
+Source0:         http://www2.ati.com/drivers/beta/amd-driver-installer-12-9-beta-x86.x86_64.zip
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         amdcccle.desktop
@@ -109,8 +109,10 @@ This package provides the shared libraries for %{name}.
 
 %prep
 %setup -q -c -T
+# Unzip fglrx driver
+unzip %{SOURCE0}
 # Extract fglrx driver
-sh %{SOURCE0} --extract fglrx
+sh %{amdrun} --extract fglrx
 
 # Extract XvBA devel files
 mkdir amdxvba
@@ -228,6 +230,10 @@ install -D -p -m 0644 amdxvba/include/amdxvba.h $RPM_BUILD_ROOT%{_includedir}/fg
 rm -f $RPM_BUILD_ROOT%{atilibdir}/switchlibGL
 rm -f $RPM_BUILD_ROOT%{atilibdir}/switchlibglx
 
+# ATI says this is a 64-bit binary, but it's not.
+rm -rf $RPM_BUILD_ROOT%{atilibdir}/libSlotMaximizerBe.so
+
+
 # Remove some 'fglrx-' prefixes
 mv $RPM_BUILD_ROOT%{atilibdir}/{fglrx-,}libGL.so.1.2
 mv $RPM_BUILD_ROOT%{_libdir}/xorg/modules/extensions/catalyst/{fglrx-,}libglx.so
@@ -339,6 +345,7 @@ fi ||:
 %config(noreplace) %{_sysconfdir}/security/console.apps/amdcccle-su
 %config %{_sysconfdir}/X11/xorg.conf.d/*catalyst*.conf
 %{_sysconfdir}/ati/atiogl.xml
+%{_sysconfdir}/ati/atiapfxx.blb
 %{_sysconfdir}/ati/logo.xbm.example
 %{_sysconfdir}/ati/logo_mask.xbm.example
 %{_sysconfdir}/ati/amdpcsdb.default
@@ -390,6 +397,27 @@ fi ||:
 
 
 %changelog
+* Mon Oct 01 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.9-0.1.beta
+- Update to Catalyst 12.9 beta (internal version 9.00)
+
+* Fri Aug 17 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.8-1
+- Update to Catalyst 12.8 release (internal version 8.982)
+
+* Sat Jun 30 2012 leigh scott <leigh123linux@googlemail.com> - 12.6-1
+- Update to Catalyst 12.6 release (internal version 8.98)
+
+* Sun Jun 24 2012 leigh scott <leigh123linux@googlemail.com> - 12.6-0.1
+- Update to Catalyst 12.6 beta (internal version 8.98)
+
+* Fri Apr 27 2012 leigh scott <leigh123linux@googlemail.com> - 12.4-1
+- Update to Catalyst 12.4 (internal version 8.961)
+
+* Fri Mar 30 2012 leigh scott <leigh123linux@googlemail.com> - 12.3-1
+- Update to Catalyst 12.3 (internal version 8.951)
+
+* Sun Feb 05 2012 Stewart Adam <s.adam at diffingo.com> - 12.1-1
+- Update to Catalyst 12.1 (internal version 8.93)
+
 * Wed Nov 16 2011 Stewart Adam <s.adam at diffingo.com> - 11.11-3
 - Bump because of rawhide tagging issue
 
