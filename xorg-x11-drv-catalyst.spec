@@ -1,16 +1,16 @@
-%define          atilibdir       %{_libdir}/catalyst
-
+%global          atilibdir       %{_libdir}/catalyst
+%global          amdrun          amd-driver-installer-12.6-legacy-x86.x86_64.run
 %global	   debug_package %{nil}
 
 %global	   __strip /bin/true
 Name:            xorg-x11-drv-catalyst
-Version:         12.4
+Version:         12.6
 Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/amd-driver-installer-12-4-x86.x86_64.run
+Source0:         http://www2.ati.com/drivers/legacy/12-6/amd-driver-installer-12.6-legacy-x86.x86_64.zip
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         amdcccle.desktop
@@ -109,8 +109,10 @@ This package provides the shared libraries for %{name}.
 
 %prep
 %setup -q -c -T
+# Unzip fglrx driver
+unzip %{SOURCE0}
 # Extract fglrx driver
-sh %{SOURCE0} --extract fglrx
+sh %{amdrun} --extract fglrx
 
 # Extract XvBA devel files
 mkdir amdxvba
@@ -394,6 +396,9 @@ fi ||:
 
 
 %changelog
+* Sat Oct 20 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.6-1
+- Update to Catalyst 12.6 legacy (internal version 8.97.100.3)
+
 * Fri Apr 27 2012 leigh scott <leigh123linux@googlemail.com> - 12.4-1
 - Update to Catalyst 12.4 (internal version 8.961)
 
