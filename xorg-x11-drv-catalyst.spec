@@ -5,7 +5,7 @@
 %global	   __strip /bin/true
 Name:            xorg-x11-drv-catalyst
 Version:         12.6
-Release:         1%{?dist}
+Release:         2%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -396,6 +396,9 @@ fi ||:
 
 
 %changelog
+* Sat Oct 20 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.6-2
+- rebuild as buildsystem "bad magic" with last version
+
 * Sat Oct 20 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.6-1
 - Update to Catalyst 12.6 legacy (internal version 8.97.100.3)
 
