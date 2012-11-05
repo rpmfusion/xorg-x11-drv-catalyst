@@ -5,7 +5,7 @@
 %global    __strip /bin/true
 Name:            xorg-x11-drv-catalyst
 Version:         12.11
-Release:         0.1.beta%{?dist}
+Release:         0.2.beta%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
@@ -318,7 +318,7 @@ if [ "${1}" -eq 1 ]; then
   /sbin/service atieventsd start >/dev/null 2>&1
   if [ -x /sbin/grubby ] ; then
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
-    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0 rd.driver.blacklist=radeon' &>/dev/null
   fi
 fi ||:
 
@@ -331,7 +331,7 @@ if [ "${1}" -eq 0 ]; then
   if [ -x /sbin/grubby ] ; then
     # remove rdblacklist from boot params in case they installed with v10.7, which blacklisted radeon upon installation
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
-    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --remove-args='radeon.modeset=0 rdblacklist=radeon' &>/dev/null
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --remove-args='radeon.modeset=0 rdblacklist=radeon rd.driver.blacklist=radeon' &>/dev/null
   fi
 fi ||:
 
@@ -397,6 +397,9 @@ fi ||:
 
 
 %changelog
+* Mon Nov 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.2.beta
+- update blacklist scriptlets
+
 * Sat Oct 27 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.1.beta
 - Update to Catalyst 12.11 beta (internal version 9.01)
 
