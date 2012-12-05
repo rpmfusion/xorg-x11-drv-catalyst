@@ -404,7 +404,7 @@ fi ||:
 
 %changelog
 * Wed Dec 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.3.beta11
-- Update to Catalyst 12.11 beta (internal version 9.01.8)
+- Update to Catalyst 12.11 beta11 (internal version 9.01.8)
 - add blacklist file to %%{_prefix}/lib/modprobe.d/
 
 * Mon Nov 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.2.beta
