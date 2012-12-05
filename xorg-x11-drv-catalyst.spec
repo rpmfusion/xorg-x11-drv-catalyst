@@ -1,16 +1,16 @@
 %global          atilibdir       %{_libdir}/catalyst
-%global          amdrun          amd-driver-installer-catalyst-12.11-beta-x86.x86_64.run
+%global          amdrun          amd-driver-installer-catalyst-12.11-beta11-x86.x86_64.run
 %global    debug_package %{nil}
 
 %global    __strip /bin/true
 Name:            xorg-x11-drv-catalyst
 Version:         12.11
-Release:         0.2.beta%{?dist}
+Release:         0.3.beta11%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
+Source0:         http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta11-x86.x86_64.zip
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         amdcccle.desktop
@@ -20,6 +20,7 @@ Source6:         catalyst-a-ac-aticonfig
 Source7:         catalyst-a-lid-aticonfig
 Source8:         00-catalyst-modulepath.conf
 Source9:         01-catalyst-videodriver.conf
+Source10:        blacklist-radeon.conf
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -293,6 +294,10 @@ chrpath --delete $RPM_BUILD_ROOT%{_sbindir}/amdnotifyui
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/ld.so.conf.d
 echo "%{atilibdir}" > $RPM_BUILD_ROOT%{_sysconfdir}/ld.so.conf.d/catalyst-%{_lib}.conf
 
+#Blacklist radeon
+install    -m 0755 -d         $RPM_BUILD_ROOT%{_prefix}/lib/modprobe.d/
+install -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_prefix}/lib/modprobe.d/
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -343,6 +348,7 @@ fi ||:
 %dir %{_sysconfdir}/ati/
 %doc %{_docdir}/amdcccle/ccc_copyrights.txt
 %config(noreplace) %{_sysconfdir}/security/console.apps/amdcccle-su
+%config(noreplace) %{_prefix}/lib/modprobe.d/blacklist-radeon.conf
 %config %{_sysconfdir}/X11/xorg.conf.d/*catalyst*.conf
 %{_sysconfdir}/ati/atiogl.xml
 %{_sysconfdir}/ati/atiapfxx.blb
@@ -397,6 +403,10 @@ fi ||:
 
 
 %changelog
+* Wed Dec 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.3.beta11
+- Update to Catalyst 12.11 beta (internal version 9.01.8)
+- add blacklist file to %%{_prefix}/lib/modprobe.d/
+
 * Mon Nov 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.2.beta
 - update blacklist scriptlets
 
