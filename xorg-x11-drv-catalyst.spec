@@ -1,16 +1,16 @@
 %global          atilibdir       %{_libdir}/catalyst
-%global          amdrun          amd-driver-installer-catalyst-12.11-beta11-x86.x86_64.run
+%global          amdrun          amd-driver-installer-catalyst-13.1-linux-x86.x86_64.run
 %global    debug_package %{nil}
 
 %global    __strip /bin/true
 Name:            xorg-x11-drv-catalyst
-Version:         12.11
-Release:         0.3.beta11%{?dist}
+Version:         13.1
+Release:         1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta11-x86.x86_64.zip
+Source0:         http://www2.ati.com/drivers/linux/amd-driver-installer-catalyst-13.1-linux-x86.x86_64.zip
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         amdcccle.desktop
@@ -403,6 +403,9 @@ fi ||:
 
 
 %changelog
+* Sun Jan 20 2013 Leigh Scott <leigh123linux@googlemail.com> - 13.1-1
+- Update to Catalyst 13.1 (internal version 9.012)
+
 * Wed Dec 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.3.beta11
 - Update to Catalyst 12.11 beta11 (internal version 9.01.8)
 - add blacklist file to %%{_prefix}/lib/modprobe.d/
