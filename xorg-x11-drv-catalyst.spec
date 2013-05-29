@@ -1,16 +1,16 @@
 %global          atilibdir       %{_libdir}/catalyst
-%global          amdrun          amd-catalyst-13.4-linux-x86.x86_64.run
+%global          amdrun          amd-driver-installer-catalyst-13-6-beta-x86.x86_64.run
 %global    debug_package %{nil}
 
 %global    __strip /bin/true
 Name:            xorg-x11-drv-catalyst
-Version:         13.4
-Release:         1%{?dist}
+Version:         13.6
+Release:         0.1.beta%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         http://www2.ati.com/drivers/linux/amd-catalyst-13.4-linux-x86.x86_64.zip
+Source0:         http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         amdcccle.desktop
@@ -403,6 +403,9 @@ fi ||:
 
 
 %changelog
+* Wed May 29 2013 Leigh Scott <leigh123linux@googlemail.com> - 13.6-0.1.beta
+- Update to Catalyst 13.6beta  (internal version 13.101)
+
 * Sat May 11 2013 Leigh Scott <leigh123linux@googlemail.com> - 13.4-1
 - Update to Catalyst 13.4 (internal version 12.104)
 
