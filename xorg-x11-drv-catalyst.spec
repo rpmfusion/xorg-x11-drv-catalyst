@@ -352,6 +352,8 @@ fi ||:
 %config %{_sysconfdir}/X11/xorg.conf.d/*catalyst*.conf
 %{_sysconfdir}/ati/atiogl.xml
 %{_sysconfdir}/ati/atiapfxx.blb
+%{_sysconfdir}/ati/atiapfxx
+%{_sysconfdir}/ati/atiapfxx.log
 %{_sysconfdir}/ati/logo.xbm.example
 %{_sysconfdir}/ati/logo_mask.xbm.example
 %{_sysconfdir}/ati/amdpcsdb.default
