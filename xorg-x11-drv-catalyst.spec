@@ -1,16 +1,16 @@
-%define          atilibdir       %{_libdir}/catalyst
+%global          atilibdir       %{_libdir}/catalyst
+%global          amdrun          amd-catalyst-13.8-beta1-linux-x86.x86_64.run
+%global    debug_package %{nil}
 
-%global	   debug_package %{nil}
-
-%global	   __strip /bin/true
+%global    __strip /bin/true
 Name:            xorg-x11-drv-catalyst
-Version:         11.11
-Release:         3%{?dist}
+Version:         13.8
+Release:         0.1.beta1%{?dist}
 Summary:         AMD's proprietary driver for ATI graphic cards
 Group:           User Interface/X Hardware Support
 License:         Redistributable, no modification permitted
 URL:             http://www.ati.com/support/drivers/linux/radeon-linux.html
-Source0:         https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/ati-driver-installer-11-11-x86.x86_64.run
+Source0:         http://www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip
 Source1:         http://developer.amd.com/downloads/xvba-sdk-0.74-404001.tar.gz
 Source2:         catalyst-README.Fedora
 Source3:         amdcccle.desktop
@@ -20,6 +20,7 @@ Source6:         catalyst-a-ac-aticonfig
 Source7:         catalyst-a-lid-aticonfig
 Source8:         00-catalyst-modulepath.conf
 Source9:         01-catalyst-videodriver.conf
+Source10:        blacklist-radeon.conf
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -109,8 +110,10 @@ This package provides the shared libraries for %{name}.
 
 %prep
 %setup -q -c -T
+# Unzip fglrx driver
+unzip %{SOURCE0}
 # Extract fglrx driver
-sh %{SOURCE0} --extract fglrx
+sh %{amdrun} --extract fglrx
 
 # Extract XvBA devel files
 mkdir amdxvba
@@ -228,6 +231,10 @@ install -D -p -m 0644 amdxvba/include/amdxvba.h $RPM_BUILD_ROOT%{_includedir}/fg
 rm -f $RPM_BUILD_ROOT%{atilibdir}/switchlibGL
 rm -f $RPM_BUILD_ROOT%{atilibdir}/switchlibglx
 
+# ATI says this is a 64-bit binary, but it's not.
+rm -rf $RPM_BUILD_ROOT%{atilibdir}/libSlotMaximizerBe.so
+
+
 # Remove some 'fglrx-' prefixes
 mv $RPM_BUILD_ROOT%{atilibdir}/{fglrx-,}libGL.so.1.2
 mv $RPM_BUILD_ROOT%{_libdir}/xorg/modules/extensions/catalyst/{fglrx-,}libglx.so
@@ -287,6 +294,10 @@ chrpath --delete $RPM_BUILD_ROOT%{_sbindir}/amdnotifyui
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/ld.so.conf.d
 echo "%{atilibdir}" > $RPM_BUILD_ROOT%{_sysconfdir}/ld.so.conf.d/catalyst-%{_lib}.conf
 
+#Blacklist radeon
+install    -m 0755 -d         $RPM_BUILD_ROOT%{_prefix}/lib/modprobe.d/
+install -p -m 0644 %{SOURCE10} $RPM_BUILD_ROOT%{_prefix}/lib/modprobe.d/
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -312,7 +323,7 @@ if [ "${1}" -eq 1 ]; then
   /sbin/service atieventsd start >/dev/null 2>&1
   if [ -x /sbin/grubby ] ; then
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
-    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0' &>/dev/null
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --args='radeon.modeset=0 rd.driver.blacklist=radeon' &>/dev/null
   fi
 fi ||:
 
@@ -325,7 +336,7 @@ if [ "${1}" -eq 0 ]; then
   if [ -x /sbin/grubby ] ; then
     # remove rdblacklist from boot params in case they installed with v10.7, which blacklisted radeon upon installation
     GRUBBYLASTKERNEL=`/sbin/grubby --default-kernel`
-    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --remove-args='radeon.modeset=0 rdblacklist=radeon' &>/dev/null
+    /sbin/grubby --update-kernel=${GRUBBYLASTKERNEL} --remove-args='radeon.modeset=0 rdblacklist=radeon rd.driver.blacklist=radeon' &>/dev/null
   fi
 fi ||:
 
@@ -337,8 +348,12 @@ fi ||:
 %dir %{_sysconfdir}/ati/
 %doc %{_docdir}/amdcccle/ccc_copyrights.txt
 %config(noreplace) %{_sysconfdir}/security/console.apps/amdcccle-su
+%config(noreplace) %{_prefix}/lib/modprobe.d/blacklist-radeon.conf
 %config %{_sysconfdir}/X11/xorg.conf.d/*catalyst*.conf
 %{_sysconfdir}/ati/atiogl.xml
+%{_sysconfdir}/ati/atiapfxx.blb
+%{_sysconfdir}/ati/atiapfxx
+%{_sysconfdir}/ati/atiapfxx.log
 %{_sysconfdir}/ati/logo.xbm.example
 %{_sysconfdir}/ati/logo_mask.xbm.example
 %{_sysconfdir}/ati/amdpcsdb.default
@@ -390,6 +405,52 @@ fi ||:
 
 
 %changelog
+* Sat Aug 03 2013 Leigh Scott <leigh123linux@googlemail.com> - 13.8-0.1.beta1
+- Update to Catalyst 13.8beta1  (internal version 13.20.5)
+
+* Wed May 29 2013 Leigh Scott <leigh123linux@googlemail.com> - 13.6-0.1.beta
+- Update to Catalyst 13.6beta  (internal version 13.101)
+
+* Sat May 11 2013 Leigh Scott <leigh123linux@googlemail.com> - 13.4-1
+- Update to Catalyst 13.4 (internal version 12.104)
+
+* Sun Jan 20 2013 Leigh Scott <leigh123linux@googlemail.com> - 13.1-1
+- Update to Catalyst 13.1 (internal version 9.012)
+
+* Wed Dec 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.3.beta11
+- Update to Catalyst 12.11 beta11 (internal version 9.01.8)
+- add blacklist file to %%{_prefix}/lib/modprobe.d/
+
+* Mon Nov 05 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.2.beta
+- update blacklist scriptlets
+
+* Sat Oct 27 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.11-0.1.beta
+- Update to Catalyst 12.11 beta (internal version 9.01)
+
+* Tue Oct 23 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.10-1
+- Update to Catalyst 12.10 release (internal version 9.002)
+
+* Mon Oct 01 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.9-0.1.beta
+- Update to Catalyst 12.9 beta (internal version 9.00)
+
+* Fri Aug 17 2012 Leigh Scott <leigh123linux@googlemail.com> - 12.8-1
+- Update to Catalyst 12.8 release (internal version 8.982)
+
+* Sat Jun 30 2012 leigh scott <leigh123linux@googlemail.com> - 12.6-1
+- Update to Catalyst 12.6 release (internal version 8.98)
+
+* Sun Jun 24 2012 leigh scott <leigh123linux@googlemail.com> - 12.6-0.1
+- Update to Catalyst 12.6 beta (internal version 8.98)
+
+* Fri Apr 27 2012 leigh scott <leigh123linux@googlemail.com> - 12.4-1
+- Update to Catalyst 12.4 (internal version 8.961)
+
+* Fri Mar 30 2012 leigh scott <leigh123linux@googlemail.com> - 12.3-1
+- Update to Catalyst 12.3 (internal version 8.951)
+
+* Sun Feb 05 2012 Stewart Adam <s.adam at diffingo.com> - 12.1-1
+- Update to Catalyst 12.1 (internal version 8.93)
+
 * Wed Nov 16 2011 Stewart Adam <s.adam at diffingo.com> - 11.11-3
 - Bump because of rawhide tagging issue
 
